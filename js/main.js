@@ -175,6 +175,42 @@ window.createMyPubNub = function(currentLevel) {
     pubnub.addListener(listener);
 }
 
+function sendKeyMessage(keyMessage) {
+    if(window.globalMyHero){
+        pubnub.publish(
+        {
+            message: { 
+                uuid: UniqueID,
+    			keyMessage: keyMessage,
+    			position: window.globalMyHero.position,
+                keyCollected: keyCollected
+            },
+            channel: window.currentChannelName,
+            sendByPost: false, // true to send via posts
+        });		
+        //console.log("send message!")
+    }else{
+        console.log("Player doesn't exsist so don't set position")
+    }
+}
+
+function fireCoins() {
+   var message = { 
+            uuid: UniqueID,
+            coinCache: window.globalLevelState.coinCache,
+            currentLevel: window.globalCurrentLevel,
+            time: window.globalLastTime
+        };
+    console.log('fireCoins', message);
+    pubnub.fire(
+    {
+        message: message,
+        
+        channel: window.currentFireChannelName,
+        sendByPost: false, // true to send via posts
+    });
+}
+
 //Load External Javascript files
 var loadHeroScript = document.createElement('script');
 loadHeroScript.src = './js/heroScript.js';

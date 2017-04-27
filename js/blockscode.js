@@ -23,7 +23,7 @@ export default (request) => {
         });
         return request.ok(); // Return a promise when you're done
     }
-   console.log("spitout", request.message)
+    console.log("spitout", request.message)
    
     pubnub.time().then((timetoken) => {
        // console.log("time", timetoken);
