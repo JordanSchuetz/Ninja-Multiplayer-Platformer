@@ -92,35 +92,40 @@ window.PlayState = {
     },
 
     _handleCollisions() {
-        this.game.physics.arcade.collide(this.hero, this.platforms);
-        for(let uuid of globalOtherHeros.keys()) {
-            var otherplayer = globalOtherHeros.get(uuid);
-            var collidePlayer = this.game.physics.arcade.collide(otherplayer, this.hero, null, null, this);
-            if(this.hero.y > 526){
-                this.hero.position.set(this.hero.x, 525);
-                console.log("set")
-            }else if(otherplayer > 526){
-                this.otherplayer.position.set(otherplayer.x, 525);
-                    console.log("set2")
-            }
-            this.game.physics.arcade.collide(otherplayer, this.platforms, null, null, this);
-            this.game.physics.arcade.overlap(otherplayer, this.coins, this._onHeroVsCoin, null, this);
-            this.game.physics.arcade.overlap(otherplayer, this.key, this._onHeroVsKey, null, this);
-            this.game.physics.arcade.overlap(otherplayer, this.door, this._onOtherHeroVsDoor, this._canHeroEnterDoor, this);
-                //  send me message that you died FIXME
-        }
+        for(let i = 0; i < 2; i++) { //prevent collisions for pushing thru
+            this.game.physics.arcade.collide(this.hero, this.platforms);
 
-        // hero vs coins (pick up)
-        this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoin, null, this);
-        // hero vs key (pick up)
-        this.game.physics.arcade.overlap(this.hero, this.key, this._onHeroVsKey, null, this);
-        // hero vs door (end level)
-        this.game.physics.arcade.overlap(this.hero, this.door, this._onHeroVsDoor, this._canHeroEnterDoor, this);
-        // ignore if there is no key or the player is on air
+            for(let uuid of globalOtherHeros.keys()) {
+                var otherplayer = globalOtherHeros.get(uuid);
+                var collidePlayer = this.game.physics.arcade.collide(otherplayer, this.hero, null, null, this);
+                if(this.hero.y > 526){
+                    this.hero.position.set(this.hero.x, 525);
+                    console.log("set")
+                }else if(otherplayer > 526){
+                    this.otherplayer.position.set(otherplayer.x, 525);
+                        console.log("set2")
+                }
+                this.game.physics.arcade.collide(otherplayer, this.platforms, null, null, this);
+                this.game.physics.arcade.overlap(otherplayer, this.coins, this._onHeroVsCoin, null, this);
+                this.game.physics.arcade.overlap(otherplayer, this.key, this._onHeroVsKey, null, this);
+                this.game.physics.arcade.overlap(otherplayer, this.door, this._onOtherHeroVsDoor, this._canHeroEnterDoor, this);
+                    //  send me message that you died FIXME
+            }
+
+            // hero vs coins (pick up)
+            this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoin, null, this);
+            // hero vs key (pick up)
+            this.game.physics.arcade.overlap(this.hero, this.key, this._onHeroVsKey, null, this);
+            // hero vs door (end level)
+            this.game.physics.arcade.overlap(this.hero, this.door, this._onHeroVsDoor, this._canHeroEnterDoor, this);
+            // ignore if there is no key or the player is on air
+        }
 
     },
 
     _handleInput() {
+        window.handleKeyMessages();
+
     //  logCurrentState(this.game);
         if(this.hero){ //Added this so we can control spawning of heros
             if (this.keys.left.isDown) {

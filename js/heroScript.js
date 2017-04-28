@@ -41,6 +41,12 @@ window.Hero = class Hero extends Phaser.Sprite {
         //Hero jumping code
         const JUMP_SPEED = 600;
         let canJump = this.body.touching.down && this.alive && !this.isFrozen;
+        console.log({
+            canJump: canJump,
+            'this.body.touching.down': this.body.touching.down,
+            'this.alive': this.alive,
+            'this.isFrozen': this.isFrozen
+        });
 
         if (canJump || this.isBoosting) {
             this.body.velocity.y = -JUMP_SPEED;
