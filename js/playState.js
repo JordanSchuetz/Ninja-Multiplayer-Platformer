@@ -64,14 +64,13 @@ window.PlayState = {
   update() {
     this._handleCollisions();
     this._handleInput();
-
-        // update scoreboards
+    // update scoreboards
     this.coinFont.text = `x${this.coinPickupCount}`;
     this.keyIcon.frame = keyCollected ? 1 : 0;
   },
 
   shutdown() {
-        // this.bgm.stop();
+    // this.bgm.stop();
   },
 
   _canHeroEnterDoor(hero) {
@@ -81,7 +80,6 @@ window.PlayState = {
   _handleCollisions() {
     for (let i = 0; i < 2; i++) { // prevent collisions for pushing thru
       this.game.physics.arcade.collide(this.hero, this.platforms);
-
       for (let uuid of globalOtherHeros.keys()) {
         let otherplayer = globalOtherHeros.get(uuid);
         let collidePlayer = this.game.physics.arcade.collide(otherplayer, this.hero, null, null, this);
@@ -215,63 +213,53 @@ window.PlayState = {
   },
 
   _onOtherHeroVsDoor(hero, door) {
-        // 'open' the door by changing its graphic and playing a sfx
+    // 'open' the door by changing its graphic and playing a sfx
     door.frame = 1;
-        // this.sfx.door.play();
-
-        // play 'enter door' animation and change to the next level when it ends
+    // this.sfx.door.play();
+    // play 'enter door' animation and change to the next level when it ends
     hero.freeze();
     this.game.add.tween(hero)
-            .to({ x: this.door.x, alpha: 0 }, 500, null, true);
+      .to({ x: this.door.x, alpha: 0 }, 500, null, true);
   },
 
   _goToNextLevel() {
     this.camera.fade('#000000');
     this.camera.onFadeComplete.addOnce(function () {
       window.globalUnsubscribe();
-            // change to next level
-        // window.globalCurrentLevel = this.level + 1;
-        // console.log("level we are going to", this.level +1)
-
-      tidCounter = false;
+      updateOccupancyCounter = false;
       if (this.level === 2) {
         createMyPubNub(0);
       } else {
         createMyPubNub(this.level + 1);
       }
-
-            /* this.game.state.restart(true, false, {
-                level: this.level + 1
-
-            });*/
     }, this);
   },
 
   _loadLevel(data) {
-        // console.log(data)
-        // create all the groups/layers that we need
+    // console.log(data)
+    // create all the groups/layers that we need
     this.bgDecoration = this.game.add.group();
     this.platforms = this.game.add.group();
     this.coins = this.game.add.group();
 
-        // spawn hero and enemies
+    // spawn hero and enemies
     this._spawnCharacters({ hero: data.hero, spiders: data.spiders });
 
-        // spawn level decoration
+    // spawn level decoration
     data.decoration.forEach(function (deco) {
       this.bgDecoration.add(
-                this.game.add.image(deco.x, deco.y, 'decoration', deco.frame));
+        this.game.add.image(deco.x, deco.y, 'decoration', deco.frame));
     }, this);
 
-        // spawn platforms
+    // spawn platforms
     data.platforms.forEach(this._spawnPlatform, this);
 
-        // spawn important objects
+    // spawn important objects
     data.coins.forEach(this._spawnCoin, this);
     this._spawnKey(data.key.x, data.key.y);
     this._spawnDoor(data.door.x, data.door.y);
 
-        // enable gravity
+    // enable gravity
     const GRAVITY = 1200;
     this.game.physics.arcade.gravity.y = GRAVITY;
   },
