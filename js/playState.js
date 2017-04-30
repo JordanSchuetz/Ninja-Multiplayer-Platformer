@@ -7,6 +7,8 @@ let keyStates = {
 const LEVEL_COUNT = 2;
 let keyCollected = false;
 
+window.frameCounter = 0;
+
 function logCurrentStateCoin(game, coin) {
   // Log Current Game State of Collected Coins
   for (value of window.globalLevelState.coinCache.coins) {
@@ -19,6 +21,59 @@ function logCurrentStateCoin(game, coin) {
   // console.log(window.globalLevelState.coinCache.coins)
 }
 
+function handleKeyMessages() {
+  let earlyMessages = [];
+  let lateMessages = [];
+  window.keyMessages.forEach((messageEvent) => {
+    if (window.globalOtherHeros) { // If player exists
+      if (messageEvent.channel === window.currentChannelName) { // If the messages channel is equal to your current channel
+        if (!window.globalOtherHeros.has(messageEvent.message.uuid)) { // If the message isn't equal to your uuid
+          window.globalGameState._addOtherCharacter(messageEvent.message.uuid); // Add another player to the game that is not yourself
+
+          let otherplayer = window.globalOtherHeros.get(messageEvent.message.uuid);
+          otherplayer.position.set(messageEvent.message.position.x, messageEvent.message.position.y); // set the position of each player according to x y
+          otherplayer.initialRemoteFrame = messageEvent.message.frameCounter;
+          otherplayer.initialLocalFrame = window.frameCounter;
+          sendKeyMessage({}); // Send publish to all clients about user information
+        }
+        if (messageEvent.message.position && window.globalOtherHeros.has(messageEvent.message.uuid)) { // If the message contains the position of the player and the player has a uuid that matches with one in the level
+          window.keyMessages.push(messageEvent);
+          let otherplayer = window.globalOtherHeros.get(messageEvent.message.uuid);
+          let frameDelta = messageEvent.message.frameCounter - otherplayer.lastKeyFrame;
+          console.log({
+            lastKeyFrame: otherplayer.lastKeyFrame,
+            frameCounter: messageEvent.message.frameCounter,
+            frameDelta
+          });
+          otherplayer.lastKeyFrame = messageEvent.message.frameCounter;
+          // otherplayer.position.set(messageEvent.message.position.x, messageEvent.message.position.y); // set the position of each player according to x y
+          // if(otherplayer.position.y >525){ //If the physics pushes a player through the ground, and a message is receieved at a y less than 525, adjust the players position
+          //    console.log("glitch")
+          //    otherplayer.position.set(otherplayer.position.x, otherplayer.position + 75)
+          // }
+          if (messageEvent.message.keyMessage.up === 'down') { // If message equals arrow up, make the player jump with the correct UUID
+            otherplayer.jump();
+            otherplayer.jumpStart = Date.now();
+          } else if (messageEvent.message.keyMessage.up === 'up') {
+            otherplayer.jumpStart = 0;
+          }
+          if (messageEvent.message.keyMessage.left === 'down') { // If message equals arrow left, make the player move left with the correct UUID
+            otherplayer.goingLeft = true;
+          } else if (messageEvent.message.keyMessage.left === 'up') {
+            otherplayer.goingLeft = false;
+          }
+          if (messageEvent.message.keyMessage.right === 'down') { // If message equals arrow down, make the player move right with the correct UUID
+            otherplayer.goingRight = true;
+          } else if (messageEvent.message.keyMessage.right === 'up') {
+            otherplayer.goingRight = false;
+          }
+        }
+      }
+    }
+  });
+  window.keyMessages.length = 0;
+};
+
 window.PlayState = {
   init(data) {
     this.keys = this.game.input.keyboard.addKeys({
@@ -30,6 +85,7 @@ window.PlayState = {
     keyCollected = false;
     this.level = (data.level || 0);
   },
+
   create() {
     window.globalGameState = this;
     // console.log('window.globalGameState created' , this.level);
@@ -62,6 +118,7 @@ window.PlayState = {
   },
 
   update() {
+    window.frameCounter++;
     this._handleCollisions();
     this._handleInput();
     // update scoreboards
@@ -106,7 +163,7 @@ window.PlayState = {
   },
 
   _handleInput() {
-    window.handleKeyMessages();
+    handleKeyMessages();
     //  logCurrentState(this.game);
     if (this.hero) { // Added this so we can control spawning of heros
       if (this.keys.left.isDown) {
@@ -269,6 +326,7 @@ window.PlayState = {
     if (globalOtherHeros.has(uuid)) { return; }
     // console.log('_addOtherCharacter', uuid);
     this.hero2 = new Hero(this.game, 10, 10);
+    this.hero2.lastKeyFrame = 0;
     this.game.add.existing(this.hero2);
     globalOtherHeros.set(uuid, this.hero2);
   },
