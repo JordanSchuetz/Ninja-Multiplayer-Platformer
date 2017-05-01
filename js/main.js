@@ -1,5 +1,6 @@
 'use strict';
 
+window.syncOtherPlayerFrameDelay = 30; //30 frames allows for 500ms of network jitter, to prevent late frames
 window.currentChannelName; // Global variable for the current channel that your player character is on
 window.currentFireChannelName; // Global variable that checks the current stage you are on to send the correct information to the PubNub Block
 window.globalCurrentLevel = 0; // Global variable for the current level (index starts at 0)

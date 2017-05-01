@@ -42,11 +42,27 @@ function handleKeyMessages() {
           window.keyMessages.push(messageEvent);
           const otherplayer = window.globalOtherHeros.get(messageEvent.message.uuid);
           const frameDelta = messageEvent.message.frameCounter - otherplayer.lastKeyFrame;
-          console.log({
+          const initDelta = otherplayer.initialRemoteFrame - otherplayer.initialLocalFrame;
+          const frameDelay = (messageEvent.message.frameCounter - window.frameCounter) - initDelta + window.syncOtherPlayerFrameDelay;
+
+          /*console.log({
             lastKeyFrame: otherplayer.lastKeyFrame,
             frameCounter: messageEvent.message.frameCounter,
-            frameDelta
-          });
+            frameDelta,
+            rf_lf: otherplayer.initialRemoteFrame - otherplayer.initialLocalFrame,
+            frameDelay
+          });*/
+
+          if (frameDelay > 0) {
+            earlyMessages.push(messageEvent);
+          //console.log('early', frameDelay);
+            return;
+          } else if (frameDelay < 0) {
+            lateMessages.push(messageEvent);
+            console.log('late', frameDelay);
+            return;
+          }
+
           otherplayer.lastKeyFrame = messageEvent.message.frameCounter;
           // otherplayer.position.set(messageEvent.message.position.x, messageEvent.message.position.y); // set the position of each player according to x y
           // if(otherplayer.position.y >525){ //If the physics pushes a player through the ground, and a message is receieved at a y less than 525, adjust the players position
@@ -73,7 +89,14 @@ function handleKeyMessages() {
       }
     }
   });
+
+  if (lateMessages.length > 0) {
+  //console.log({ lateMessages, earlyMessages });
+  }
   window.keyMessages.length = 0;
+  earlyMessages.forEach((em) => {
+    window.keyMessages.push(em);
+  });
 }
 
 window.PlayState = {
