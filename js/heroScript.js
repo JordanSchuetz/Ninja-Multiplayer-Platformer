@@ -1,12 +1,12 @@
-
+'use strict';
 
 // =============================================================================
 // Create Player (Hero)
 // =============================================================================
-window.Hero = class Hero extends Phaser.Sprite {
+window.Hero = class Hero extends window.Phaser.Sprite {
   constructor(game) {
     super();
-    Phaser.Sprite.call(this, game, 10, 523, 'hero');
+    window.Phaser.Sprite.call(this, game, 10, 523, 'hero');
     // anchor
     this.anchor.set(0.5, 0.5);
     // physics properties
@@ -39,7 +39,7 @@ window.Hero = class Hero extends Phaser.Sprite {
   jump() {
     // Hero jumping code
     const JUMP_SPEED = 600;
-    let canJump = this.body.touching.down && this.alive && !this.isFrozen;
+    const canJump = this.body.touching.down && this.alive && !this.isFrozen;
     // console.log({
     //   canJump: canJump,
     //   'this.body.touching.down': this.body.touching.down,
@@ -56,7 +56,7 @@ window.Hero = class Hero extends Phaser.Sprite {
 
   update() {
     // update sprite animation, if it needs changing
-    let animationName = this._getAnimationName();
+    const animationName = this._getAnimationName();
     if (this.animations.name !== animationName) {
       this.animations.play(animationName);
     }

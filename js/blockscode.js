@@ -1,7 +1,7 @@
 export default (request) => {
   const pubnub = require('pubnub');
   const db = require('kvstore');
-  const xhr = require('xhr');
+
   const keyName = `gamestate2_${request.message.currentLevel}`;
   if (request.message.int || request.message.fromServer) {
     return request.ok(); // Return a promise when you're done

@@ -1,45 +1,47 @@
+'use strict';
+
 // =============================================================================
 // Play state
 // =============================================================================
-let keyStates = {
+const keyStates = {
 
 };
-const LEVEL_COUNT = 2;
+const LEVEL_COUNT = 2; //never used
 let keyCollected = false;
 
 window.frameCounter = 0;
 
 function logCurrentStateCoin(game, coin) {
   // Log Current Game State of Collected Coins
-  for (value of window.globalLevelState.coinCache.coins) {
+  for (const value of window.globalLevelState.coinCache.coins) {
     if (coin.x === value.x) {
       window.globalLevelState.coinCache.coins.splice(window.globalLevelState.coinCache.coins.indexOf(value), 1);
       // console.log(value)
     }
   }
-  fireCoins();
+  window.fireCoins();
   // console.log(window.globalLevelState.coinCache.coins)
 }
 
 function handleKeyMessages() {
-  let earlyMessages = [];
-  let lateMessages = [];
+  const earlyMessages = [];
+  const lateMessages = [];
   window.keyMessages.forEach((messageEvent) => {
     if (window.globalOtherHeros) { // If player exists
       if (messageEvent.channel === window.currentChannelName) { // If the messages channel is equal to your current channel
         if (!window.globalOtherHeros.has(messageEvent.message.uuid)) { // If the message isn't equal to your uuid
           window.globalGameState._addOtherCharacter(messageEvent.message.uuid); // Add another player to the game that is not yourself
 
-          let otherplayer = window.globalOtherHeros.get(messageEvent.message.uuid);
+          const otherplayer = window.globalOtherHeros.get(messageEvent.message.uuid);
           otherplayer.position.set(messageEvent.message.position.x, messageEvent.message.position.y); // set the position of each player according to x y
           otherplayer.initialRemoteFrame = messageEvent.message.frameCounter;
           otherplayer.initialLocalFrame = window.frameCounter;
-          sendKeyMessage({}); // Send publish to all clients about user information
+          window.sendKeyMessage({}); // Send publish to all clients about user information
         }
         if (messageEvent.message.position && window.globalOtherHeros.has(messageEvent.message.uuid)) { // If the message contains the position of the player and the player has a uuid that matches with one in the level
           window.keyMessages.push(messageEvent);
-          let otherplayer = window.globalOtherHeros.get(messageEvent.message.uuid);
-          let frameDelta = messageEvent.message.frameCounter - otherplayer.lastKeyFrame;
+          const otherplayer = window.globalOtherHeros.get(messageEvent.message.uuid);
+          const frameDelta = messageEvent.message.frameCounter - otherplayer.lastKeyFrame;
           console.log({
             lastKeyFrame: otherplayer.lastKeyFrame,
             frameCounter: messageEvent.message.frameCounter,
@@ -72,14 +74,14 @@ function handleKeyMessages() {
     }
   });
   window.keyMessages.length = 0;
-};
+}
 
 window.PlayState = {
   init(data) {
     this.keys = this.game.input.keyboard.addKeys({
-      left: Phaser.KeyCode.LEFT,
-      right: Phaser.KeyCode.RIGHT,
-      up: Phaser.KeyCode.UP
+      left: window.Phaser.KeyCode.LEFT,
+      right: window.Phaser.KeyCode.RIGHT,
+      up: window.Phaser.KeyCode.UP
     });
     this.coinPickupCount = 0;
     keyCollected = false;
@@ -137,9 +139,9 @@ window.PlayState = {
   _handleCollisions() {
     for (let i = 0; i < 2; i++) { // prevent collisions for pushing thru
       this.game.physics.arcade.collide(this.hero, this.platforms);
-      for (let uuid of globalOtherHeros.keys()) {
-        let otherplayer = globalOtherHeros.get(uuid);
-        let collidePlayer = this.game.physics.arcade.collide(otherplayer, this.hero, null, null, this);
+      for (const uuid of window.globalOtherHeros.keys()) {
+        const otherplayer = window.globalOtherHeros.get(uuid);
+        const collidePlayer = this.game.physics.arcade.collide(otherplayer, this.hero, null, null, this);
         if (this.hero.y > 526) {
           this.hero.position.set(this.hero.x, 525);
           // console.log('set');
@@ -169,13 +171,13 @@ window.PlayState = {
       if (this.keys.left.isDown) {
         if (!keyStates.leftIsDown) {
           // console.log('left pushed');
-          sendKeyMessage({ left: 'down' });
+          window.sendKeyMessage({ left: 'down' });
         }
         keyStates.leftIsDown = true;
       } else {
         if (keyStates.leftIsDown) {
           // console.log('left un-pushed');
-          sendKeyMessage({ left: 'up' });
+          window.sendKeyMessage({ left: 'up' });
         }
         keyStates.leftIsDown = false;
       }
@@ -183,13 +185,13 @@ window.PlayState = {
       if (this.keys.right.isDown) {
         if (!keyStates.rightIsDown) {
           // console.log('right pushed');
-          sendKeyMessage({ right: 'down' });
+          window.sendKeyMessage({ right: 'down' });
         }
         keyStates.rightIsDown = true;
       } else {
         if (keyStates.rightIsDown) {
           // console.log('right un-pushed');
-          sendKeyMessage({ right: 'up' });
+          window.sendKeyMessage({ right: 'up' });
         }
         keyStates.rightIsDown = false;
       }
@@ -197,14 +199,14 @@ window.PlayState = {
       if (this.hero.body.touching.down) {
         if (this.keys.up.isDown) {
           if (!keyStates.upIsDown) {
-            sendKeyMessage({ up: 'down' });
-            globalMyHero.jump();
+            window.sendKeyMessage({ up: 'down' });
+            window.globalMyHero.jump();
           }
           keyStates.upIsDown = true;
         } else {
           if (keyStates.upIsDown) {
             // console.log('up un-pushed');
-            sendKeyMessage({ up: 'up' });
+            window.sendKeyMessage({ up: 'up' });
           }
           keyStates.upIsDown = false;
         }
@@ -219,7 +221,6 @@ window.PlayState = {
       }
 
       // handle jump
-      let jumped = false;
       const JUMP_HOLD = 10;// 200; // ms
       if (this.keys.up.downDuration(JUMP_HOLD)) {
         // let didJump = this.hero.jump();
@@ -227,8 +228,8 @@ window.PlayState = {
       }
 
 
-      for (let uuid of globalOtherHeros.keys()) {
-        let otherplayer = globalOtherHeros.get(uuid);
+      for (const uuid of window.globalOtherHeros.keys()) {
+        const otherplayer = window.globalOtherHeros.get(uuid);
         if (Date.now() + JUMP_HOLD <= otherplayer.jumpStart) {
           // otherplayer.jump();
         }
@@ -248,7 +249,7 @@ window.PlayState = {
     this.door.frame = 1;
     key.kill();
     keyCollected = true;
-    sendKeyMessage(keyCollected);
+    window.sendKeyMessage({ keyCollected });
   },
 
   _onHeroVsCoin(hero, coin) {
@@ -283,11 +284,11 @@ window.PlayState = {
     this.camera.fade('#000000');
     this.camera.onFadeComplete.addOnce(function () {
       window.globalUnsubscribe();
-      updateOccupancyCounter = false;
+      window.updateOccupancyCounter = false;
       if (this.level === 2) {
-        createMyPubNub(0);
+        window.createMyPubNub(0);
       } else {
-        createMyPubNub(this.level + 1);
+        window.createMyPubNub(this.level + 1);
       }
     }, this);
   },
@@ -323,24 +324,24 @@ window.PlayState = {
 
   _addOtherCharacter(uuid) {
     // console.log('Added another character to game');
-    if (globalOtherHeros.has(uuid)) { return; }
+    if (window.globalOtherHeros.has(uuid)) { return; }
     // console.log('_addOtherCharacter', uuid);
-    this.hero2 = new Hero(this.game, 10, 10);
+    this.hero2 = new window.Hero(this.game, 10, 10);
     this.hero2.lastKeyFrame = 0;
     this.game.add.existing(this.hero2);
-    globalOtherHeros.set(uuid, this.hero2);
+    window.globalOtherHeros.set(uuid, this.hero2);
   },
 
   _removeOtherCharacter(uuid) {
-    if (!globalOtherHeros.has(uuid)) { return; }
-    globalOtherHeros.get(uuid).destroy();
-    globalOtherHeros.delete(uuid);
+    if (!window.globalOtherHeros.has(uuid)) { return; }
+    window.globalOtherHeros.get(uuid).destroy();
+    window.globalOtherHeros.delete(uuid);
   },
 
   _spawnCharacters(data) {
-    this.hero = new Hero(this.game, 10, 10);
+    this.hero = new window.Hero(this.game, 10, 10);
     this.hero.body.bounce.setTo(0);
-    playerText = this.game.add.text(this.hero.position.x - 10, this.hero.position.y - 550, 'me', { fill: '#000000', fontSize: '15px' });
+    const playerText = this.game.add.text(this.hero.position.x - 10, this.hero.position.y - 550, 'me', { fill: '#000000', fontSize: '15px' });
     playerText.anchor.set(0.5);
     this.hero.addChild(playerText);
     // console.log(playerText.position.x, playerText.position.y);
@@ -348,11 +349,11 @@ window.PlayState = {
     window.globalOtherHeros = this.otherHeros = new Map();
     this.game.add.existing(this.hero);
     // globalMyHero.alpha = 1; //compensating for lag
-    sendKeyMessage({});
+    window.sendKeyMessage({});
   },
 
   _spawnPlatform(platform) {
-    let sprite = this.platforms.create(platform.x, platform.y, platform.image);
+    const sprite = this.platforms.create(platform.x, platform.y, platform.image);
     // physics for platform sprites
     this.game.physics.enable(sprite);
     sprite.body.allowGravity = false;
@@ -361,7 +362,7 @@ window.PlayState = {
   },
 
   _spawnCoin(coin) {
-    let sprite = this.coins.create(coin.x, coin.y, 'coin');
+    const sprite = this.coins.create(coin.x, coin.y, 'coin');
     sprite.anchor.set(0.5, 0.5);
     // physics (so we can detect overlap with the hero)
     this.game.physics.enable(sprite);
@@ -380,7 +381,7 @@ window.PlayState = {
     // add a small 'up & down' animation via a tween
     this.key.y -= 3;
     this.game.add.tween(this.key)
-      .to({ y: this.key.y + 6 }, 800, Phaser.Easing.Sinusoidal.InOut)
+      .to({ y: this.key.y + 6 }, 800, window.Phaser.Easing.Sinusoidal.InOut)
       .yoyo(true)
       .loop()
       .start();
@@ -400,8 +401,8 @@ window.PlayState = {
     this.keyIcon = this.game.make.image(0, 19, 'icon:key');
     this.keyIcon.anchor.set(0, 0.5);
 
-    let coinIcon = this.game.make.image(this.keyIcon.width + 7, 0, 'icon:coin');
-    let coinScoreImg = this.game.make.image(coinIcon.x + coinIcon.width, coinIcon.height / 2, this.coinFont);
+    const coinIcon = this.game.make.image(this.keyIcon.width + 7, 0, 'icon:coin');
+    const coinScoreImg = this.game.make.image(coinIcon.x + coinIcon.width, coinIcon.height / 2, this.coinFont);
     coinScoreImg.anchor.set(0, 0.5);
 
     this.hud = this.game.add.group();
